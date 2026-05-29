@@ -67,7 +67,7 @@ exports.handler = async (event) => {
 };
 
 async function readState() {
-  const store = getStore(STORE_NAME);
+  const store = getDataStore();
   const data = await store.get(DATA_KEY, { type: "json" });
   if (data) return normalizeState(data);
 
@@ -81,8 +81,19 @@ async function readState() {
 
 async function writeState(state) {
   const normalized = normalizeState(state);
-  await getStore(STORE_NAME).setJSON(DATA_KEY, normalized);
+  await getDataStore().setJSON(DATA_KEY, normalized);
   return normalized;
+}
+
+function getDataStore() {
+  if (process.env.NETLIFY_SITE_ID && process.env.NETLIFY_API_TOKEN) {
+    return getStore({
+      name: STORE_NAME,
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_API_TOKEN
+    });
+  }
+  return getStore(STORE_NAME);
 }
 
 function normalizeState(state) {
