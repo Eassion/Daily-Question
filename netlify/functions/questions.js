@@ -86,11 +86,11 @@ async function writeState(state) {
 }
 
 function getDataStore() {
-  if (process.env.NETLIFY_SITE_ID && process.env.NETLIFY_API_TOKEN) {
+  if (process.env.BLOBS_SITE_ID && process.env.BLOBS_API_TOKEN) {
     return getStore({
       name: STORE_NAME,
-      siteID: process.env.NETLIFY_SITE_ID,
-      token: process.env.NETLIFY_API_TOKEN
+      siteID: process.env.BLOBS_SITE_ID,
+      token: process.env.BLOBS_API_TOKEN
     });
   }
   return getStore(STORE_NAME);
