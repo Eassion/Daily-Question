@@ -1,0 +1,10 @@
+.git
+.gitignore
+.netlify
+.netlifyignore
+node_modules
+netlify
+package.json
+package-lock.json
+supabase
+README.md

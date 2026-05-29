@@ -1,4 +1,0 @@
-window.DAILY_QUESTION_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
-};

@@ -1,0 +1,25 @@
+{
+  "name": "daily-question",
+  "version": "1.0.0",
+  "description": "每日面试题网站，使用 Netlify Functions 和 Netlify Blobs 保存数据。",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod --dir ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eassion/Daily-Question.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Eassion/Daily-Question/issues"
+  },
+  "homepage": "https://github.com/Eassion/Daily-Question#readme",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.8"
+  }
+}

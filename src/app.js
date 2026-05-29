@@ -1,6 +1,6 @@
-const config = window.DAILY_QUESTION_CONFIG || {};
 const app = document.querySelector("#app");
 const uploadLink = document.querySelector("#uploadLink");
+const isFilePreview = window.location.protocol === "file:";
 
 const state = {
   categories: [],
@@ -8,19 +8,16 @@ const state = {
 };
 
 const api = {
-  enabled: Boolean(config.SUPABASE_URL && config.SUPABASE_ANON_KEY),
+  enabled: !isFilePreview,
   async request(path, options = {}) {
     if (!this.enabled) {
       return demoRequest(path, options);
     }
 
-    const response = await fetch(`${config.SUPABASE_URL}/rest/v1/${path}`, {
+    const response = await fetch(path, {
       ...options,
       headers: {
-        apikey: config.SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${config.SUPABASE_ANON_KEY}`,
         "Content-Type": "application/json",
-        Prefer: "return=representation",
         ...(options.headers || {})
       }
     });
@@ -33,26 +30,26 @@ const api = {
     return data;
   },
   getQuestions() {
-    return this.request("questions?select=*&order=uploaded_at.desc");
+    return this.request("/api/questions").then((data) => data.questions);
   },
   getCategories() {
-    return this.request("categories?select=*&order=name.asc");
+    return this.request("/api/questions").then((data) => data.categories);
   },
   createQuestion(payload) {
-    return this.request("rpc/create_question_with_invite", {
+    return this.request("/api/questions", {
       method: "POST",
       body: JSON.stringify(payload)
     });
   },
   answerQuestion(payload) {
-    return this.request("rpc/answer_question_with_invite", {
-      method: "POST",
+    return this.request("/api/questions", {
+      method: "PUT",
       body: JSON.stringify(payload)
     });
   },
   updateQuestion(payload) {
-    return this.request("rpc/update_question_with_invite", {
-      method: "POST",
+    return this.request("/api/questions", {
+      method: "PATCH",
       body: JSON.stringify(payload)
     });
   }
@@ -98,9 +95,10 @@ const demoData = {
 
 async function demoRequest(path, options = {}) {
   await new Promise((resolve) => setTimeout(resolve, 120));
-  if (path.startsWith("questions")) return demoData.questions;
-  if (path.startsWith("categories")) return demoData.categories;
-  if (path.startsWith("rpc/create_question_with_invite")) {
+  if (path.startsWith("/api/questions") && (!options.method || options.method === "GET")) {
+    return demoData;
+  }
+  if (path.startsWith("/api/questions") && options.method === "POST") {
     const payload = JSON.parse(options.body);
     const categoryName = payload.category_name || "未分类";
     let category = demoData.categories.find((item) => item.name === categoryName);
@@ -130,7 +128,7 @@ async function demoRequest(path, options = {}) {
     demoData.questions.unshift(question);
     return [question];
   }
-  if (path.startsWith("rpc/answer_question_with_invite")) {
+  if (path.startsWith("/api/questions") && options.method === "PUT") {
     const payload = JSON.parse(options.body);
     const question = demoData.questions.find((item) => item.id === payload.question_id);
     if (!question || question.answer) throw new Error("题目不存在或已有答案");
@@ -139,7 +137,7 @@ async function demoRequest(path, options = {}) {
     question.answered_at = new Date().toISOString();
     return [question];
   }
-  if (path.startsWith("rpc/update_question_with_invite")) {
+  if (path.startsWith("/api/questions") && options.method === "PATCH") {
     const payload = JSON.parse(options.body);
     const question = demoData.questions.find((item) => item.id === payload.question_id);
     if (!question) throw new Error("题目不存在");
@@ -469,7 +467,7 @@ function renderUpload() {
       <p class="eyebrow">Submit</p>
       <h2>上传一道好题</h2>
       ${api.enabled && !invite ? `<p class="form-note">当前没有检测到邀请链接。请使用带 invite 参数的链接进入，例如 <code>?invite=你的token</code>。</p>` : ""}
-      ${api.enabled ? "" : `<p class="form-note">当前是本地演示模式，提交会立即展示，但刷新页面后不会保存。配置 Supabase 后会变成真实上传。</p>`}
+      ${api.enabled ? "" : `<p class="form-note">当前是本地演示模式，提交会立即展示，但刷新页面后不会保存。部署到 Netlify 后会变成真实上传。</p>`}
       <form class="form-grid" id="questionForm">
         <input type="hidden" name="invite_token" value="${escapeHtml(invite)}" />
         <div class="field-grid">
