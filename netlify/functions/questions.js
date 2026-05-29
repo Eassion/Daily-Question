@@ -44,6 +44,15 @@ const defaultQuestions = [
 exports.handler = async (event) => {
   try {
     if (event.httpMethod === "GET") {
+      if (event.queryStringParameters?.debug === "1") {
+        return json({
+          hasBlobsSiteID: Boolean(process.env.BLOBS_SITE_ID),
+          hasBlobsAPIToken: Boolean(process.env.BLOBS_API_TOKEN),
+          hasNetlifySiteID: Boolean(process.env.NETLIFY_SITE_ID),
+          hasNetlifyAPIToken: Boolean(process.env.NETLIFY_API_TOKEN),
+          context: process.env.CONTEXT || null
+        });
+      }
       return json(await readState());
     }
 
