@@ -4,7 +4,6 @@
   --muted: #69736f;
   --line: #ddd8cb;
   --paper: #fbfaf6;
-  --paper-deep: #f1eee5;
   --accent: #9f3f2f;
   --accent-dark: #6f2c25;
   --sage: #6f8173;
@@ -36,6 +35,10 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+#app {
+  min-height: 100vh;
 }
 
 .site-header {
@@ -116,7 +119,7 @@ select {
 }
 
 .top-nav a:hover,
-.top-nav a.active {
+.top-nav a.router-link-active {
   color: var(--ink);
   background: #fff;
 }
@@ -172,7 +175,6 @@ h1 {
   font-size: clamp(1.85rem, 4.8vw, 3.8rem);
   font-weight: 500;
   line-height: 1.12;
-  letter-spacing: 0;
 }
 
 h2 {
@@ -282,6 +284,11 @@ h3 {
   border-bottom: 1px solid rgba(221, 216, 203, 0.65);
 }
 
+.category-link.active,
+.category-link.router-link-active {
+  color: var(--accent);
+}
+
 .category-link span:last-child {
   color: var(--muted);
   font-size: 0.86rem;
@@ -379,14 +386,6 @@ select:focus {
 
 .status-text.error {
   color: var(--accent-dark);
-}
-
-.status-text.success {
-  color: #3d6e50;
-}
-
-.hidden {
-  display: none !important;
 }
 
 @media (max-width: 820px) {

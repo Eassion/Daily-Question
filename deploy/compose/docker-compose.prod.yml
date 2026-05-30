@@ -1,0 +1,77 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: daily-question-mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - daily-question-network
+
+  backend:
+    image: daily-question-backend:latest
+    container_name: daily-question-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_SQL_INIT_MODE: always
+      APP_INVITE_TOKEN: ${APP_INVITE_TOKEN}
+      APP_INVITE_PASSCODE: ${APP_INVITE_PASSCODE}
+      APP_CORS_ALLOWED_ORIGINS: https://${APP_DOMAIN},http://${APP_DOMAIN}
+    expose:
+      - "8080"
+    networks:
+      - daily-question-network
+
+  frontend:
+    image: daily-question-frontend:latest
+    container_name: daily-question-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - daily-question-network
+
+  gateway:
+    image: nginx:1.27-alpine
+    container_name: daily-question-gateway
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    volumes:
+      - ../nginx/templates:/etc/nginx/templates:ro
+      - ../nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - daily-question-network
+
+volumes:
+  mysql_data:
+
+networks:
+  daily-question-network:
